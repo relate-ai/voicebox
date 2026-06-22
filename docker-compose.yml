@@ -1,42 +1,31 @@
-x-voicebox-build: &voicebox-build
-  context: .
-  dockerfile: Dockerfile
-
-x-voicebox-volumes: &voicebox-volumes
-  - voicebox-data:/app/data
-  - huggingface-cache:/home/voicebox/.cache/huggingface
-
 services:
-  voicebox-permissions:
-    build: *voicebox-build
-    user: "0:0"
-    command:
-      - sh
-      - -c
-      - |
-        mkdir -p /app/data/generations /app/data/profiles /app/data/cache /home/voicebox/.cache/huggingface
-        chown -R voicebox:voicebox /app/data /home/voicebox/.cache
-    volumes: *voicebox-volumes
-    restart: "no"
-
   voicebox:
-    build: *voicebox-build
+    build:
+      context: .
+      dockerfile: Dockerfile
+    user: "0:0"
     restart: unless-stopped
-
-    depends_on:
-      voicebox-permissions:
-        condition: service_completed_successfully
 
     expose:
       - "17493"
 
-    volumes: *voicebox-volumes
+    volumes:
+      - voicebox-data:/app/data
+      - huggingface-cache:/home/voicebox/.cache/huggingface
 
     environment:
       - LOG_LEVEL=info
       - NUMBA_CACHE_DIR=/tmp/numba_cache
       - VOICEBOX_MODELS_DIR=/home/voicebox/.cache/huggingface
       - DEVICE=cpu
+
+    command:
+      - sh
+      - -c
+      - |
+        mkdir -p /app/data/generations /app/data/profiles /app/data/cache /home/voicebox/.cache/huggingface
+        chown -R voicebox:voicebox /app/data /home/voicebox/.cache
+        su voicebox -s /bin/bash -c 'exec uvicorn backend.main:app --host 0.0.0.0 --port 17493'
 
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:17493/health"]
