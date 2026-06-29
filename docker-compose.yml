@@ -10,6 +10,7 @@ services:
       - "17493"
 
     volumes:
+      - /data/working/voicebox:/app/data/generations
       - voicebox-data:/app/data
       - huggingface-cache:/home/voicebox/.cache/huggingface
 
