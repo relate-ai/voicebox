@@ -38,11 +38,11 @@ services:
     deploy:
       resources:
         limits:
-          cpus: "4"
-          memory: 8G
+          cpus: "6"
+          memory: 12G
         reservations:
-          cpus: "1"
-          memory: 4G
+          cpus: "2"
+          memory: 6G
 
 volumes:
   voicebox-data:
